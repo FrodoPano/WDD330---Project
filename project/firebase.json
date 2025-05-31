@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "predeploy": "npm --prefix functions install",
+    "source": "functions"
+  },
+  "hosting": {
+    "public": "public",
+    "rewrites": [
+      {
+        "source": "/calculateEmissions",
+        "function": "calculateEmissions"
+      }
+    ]
+  }
+}

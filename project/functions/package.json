@@ -1,0 +1,9 @@
+{
+  "name": "functions",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.1",
+    "firebase-functions": "^4.6.0"
+  },
+  "private": true
+}
