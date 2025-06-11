@@ -90,7 +90,7 @@ async function calculateFootprint() {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + await getFirebaseToken() // If using auth
+                    
                 },
                 body: JSON.stringify({
                     activityType,
@@ -268,4 +268,20 @@ window.onload = function() {
         }
     `;
     document.head.appendChild(style);
+
 };
+
+async function getFirebaseToken() {
+  try {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      // Sign in anonymously if no user exists
+      await firebase.auth().signInAnonymously();
+      return await firebase.auth().currentUser.getIdToken();
+    }
+    return await user.getIdToken();
+  } catch (error) {
+    console.error("Auth error:", error);
+    return null;
+  }
+}

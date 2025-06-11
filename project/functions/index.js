@@ -6,8 +6,12 @@ require("dotenv").config();
 
 exports.calculateEmissions = functions.https.onRequest(async (req, res) => {
   // Validate request
+
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST');
+
   if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
+    return res.status(204).send('');
   }
 
   try {
