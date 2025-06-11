@@ -67,7 +67,6 @@ async function calculateFootprint() {
     // Get form values
     const distance = parseFloat(document.getElementById("transport").value) || 0;
     const diet = document.getElementById("diet").value;
-    const activityType = "car"; // Default to car (can expand later)
 
     // Validate input
     if (distance <= 0) {
@@ -77,26 +76,25 @@ async function calculateFootprint() {
 
     // UI Loading state
     const submitButton = document.querySelector("#carbon-form button[type='submit']");
-    const originalText = submitButton.textContent;
     submitButton.disabled = true;
     submitButton.textContent = "Calculating...";
-    submitButton.classList.add("loading");
 
     try {
-        // Call Firebase Function (replace with your project ID)
+        const idToken = await getFirebaseToken();
         const response = await fetch(
-            "https://us-central1-carbon-tracker-12345.cloudfunctions.net/calculateEmissions",
+            "https://us-central1-carbon-12a31.cloudfunctions.net/calculateEmissions",
             {
                 method: "POST",
                 headers: { 
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${idToken}`
                     
                 },
                 body: JSON.stringify({
-                    activityType,
+                    activityType: "car",
                     distance: distance * 1.60934, // Convert miles to km
-                    diet,
-                    timestamp: new Date().toISOString()
+                    diet
+                    
                 }),
             }
         );
@@ -104,31 +102,41 @@ async function calculateFootprint() {
         // Handle response
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || "API request failed");
+            throw new Error(errorData.message || "Request failed");
         }
 
         const result = await response.json();
-        
-        // Update UI with results
         updateDashboard(result.co2e);
-        
-        // Show route suggestions if available
-        if (result.alternateRoutes) {
-            showEcoRoutes(result.alternateRoutes);
-        }
-
-        showNotification("Footprint calculated successfully!", "success");
-
+        showNotification("Calculation successful!", "success");
     } catch (error) {
-        console.error("Calculation error:", error);
-        showNotification(error.message || "Calculation failed. Please try again.", "error");
-    } finally {
-        // Reset UI
-        submitButton.disabled = false;
-        submitButton.textContent = originalText;
-        submitButton.classList.remove("loading");
+        console.error("Error:", error);
+        showNotification(error.message || "Calculation failed", "error");
+        } 
+        finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Calculate";
+        }
+    
+
+     
+    
+    
+}
+
+async function getFirebaseToken() {
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            await firebase.auth().signInAnonymously();
+            return await firebase.auth().currentUser.getIdToken();
+        }
+        return await user.getIdToken();
+    } catch (error) {
+        console.error("Auth error:", error);
+        return null;
     }
 }
+
 
 // Update dashboard with new results
 function updateDashboard(co2e) {
